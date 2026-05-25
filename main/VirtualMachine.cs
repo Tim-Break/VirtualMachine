@@ -63,17 +63,7 @@ public class VirtualMachine
             }
         };
     }
-
-    /*
-    void LoadProgram(byte[] code, int addr)
-    {
-        for (int i=addr;i<addr+code.Length;i++)
-        {
-            ram[i] = code[i-addr];
-        }
-        ip = addr;
-    }
-    */
+    
 
     void SetZF(bool value)
     {
