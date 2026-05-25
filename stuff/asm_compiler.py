@@ -138,6 +138,9 @@ def parse_cmd(line:str):
                     elif line[0] == "t":
                         value += "\t"
                         line = line[1:]
+                    elif line[0] == "\\":
+                        value += "\\"
+                        line = line[1:]
                 else:
                     value += line[0]
                     line = line[1:]
