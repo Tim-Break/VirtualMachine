@@ -1,0 +1,54 @@
+public enum CMD : byte
+{
+    move_r = 0x02,
+    move_imm = 0x01,
+
+    load = 0x04,
+    store = 0x05,
+
+    add = 0x10,
+    sub = 0x11,
+    mul = 0x12,
+    div = 0x13,
+
+    and = 0x14,
+    or = 0x15,
+    xor = 0x16,
+
+    cmp = 0x17,
+
+    add_i = 0x18,
+    sub_i = 0x19,
+    mul_i = 0x1A,
+    div_i = 0x1B,
+
+    and_i = 0x1C,
+    or_i = 0x1D,
+    xor_i = 0x1E,
+
+    cmp_i = 0x1F,
+
+    push = 0x20,
+    pop = 0x21,
+
+    jmp_rel = 0x30,
+    jz_rel = 0x31,
+    jnz_rel = 0x32,
+
+    jmp_abs = 0x37,
+    jz_abs = 0x38,
+    jnz_abs = 0x39,
+
+    call = 0x34,
+    ret = 0x35,
+
+    lea = 0x40,
+
+    int_ = 0x50,
+    iret = 0x51,
+
+    in_ = 0x60,
+    out_ = 0x61,
+
+    halt = 0xFF
+}
