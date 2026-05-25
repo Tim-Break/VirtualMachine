@@ -2,12 +2,13 @@ _start:
     lea r2, success
     lea r3, fail
 
-    mov r0, 0b11010111      ; Test 8-bit number
+    mov r7, 1               ; Answer
+    mov r0, 0xA1234567      ; Test 32-bit number
     mov r1, 0               ; Counter
 
     call find_zero
 
-    cmp r1, 2
+    cmp r1, r7
     jz scc
     mov r0, r3
 scc:
@@ -16,7 +17,7 @@ scc:
     halt
 
 find_zero:
-    and r0, 0x80
+    and r0, 0x80000000      ; bitmask
     jz fzret
     shl r0, 1
     add r1, 1
