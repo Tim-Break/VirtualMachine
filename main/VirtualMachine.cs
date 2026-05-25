@@ -103,7 +103,7 @@ public class VirtualMachine
 
         switch (opc)
         {
-            case CMD.move_r:
+            case CMD.mov_r:
             {
                 byte r1 = ram[ip+1];
                 byte r2 = ram[ip+2];
@@ -112,7 +112,7 @@ public class VirtualMachine
                 return 255;
             }
 
-            case CMD.move_imm:
+            case CMD.mov_i:
             {
                 byte r1 = ram[ip+1];
                 rgs[r1] = BitConverter.ToInt32(ram, ip+2);
@@ -138,7 +138,7 @@ public class VirtualMachine
                 return 255;
             }
 
-            case CMD.add:
+            case CMD.add_r:
             {
                 byte r1 = ram[ip+1];
                 byte r2 = ram[ip+2];
@@ -149,7 +149,7 @@ public class VirtualMachine
                 return 255;
             }
 
-            case CMD.sub:
+            case CMD.sub_r:
             {
                 byte r1 = ram[ip+1];
                 byte r2 = ram[ip+2];
@@ -160,7 +160,7 @@ public class VirtualMachine
                 return 255;
             }
 
-            case CMD.mul:
+            case CMD.mul_r:
             {
                 byte r1 = ram[ip+1];
                 byte r2 = ram[ip+2];
@@ -171,11 +171,11 @@ public class VirtualMachine
                 return 255;
             }
 
-            case CMD.div:
+            case CMD.div_r:
             {
                 byte r1 = ram[ip+1];
                 byte r2 = ram[ip+2];
-                // При делении на 0 процессор должен бы вызвать исключение, но пока так
+                // Exception if division by zero
                 rgs[r1] = rgs[r1] / rgs[r2];
                 ip += 3;
                 SetZF(rgs[r1] == 0);
@@ -183,7 +183,29 @@ public class VirtualMachine
                 return 255;
             }
 
-            case CMD.and:
+            case CMD.shl_r:
+            {
+                byte r1 = ram[ip+1];
+                byte r2 = ram[ip+2];
+                rgs[r1] = rgs[r1] << rgs[r2];
+                ip += 3;
+                SetZF(rgs[r1] == 0);
+                SetSF(((uint)rgs[r1] & 0x80000000) != 0);
+                return 255;
+            }
+
+            case CMD.shr_r:
+            {
+                byte r1 = ram[ip+1];
+                byte r2 = ram[ip+2];
+                rgs[r1] = rgs[r1] >> rgs[r2];
+                ip += 3;
+                SetZF(rgs[r1] == 0);
+                SetSF(((uint)rgs[r1] & 0x80000000) != 0);
+                return 255;
+            }
+
+            case CMD.and_r:
             {
                 byte r1 = ram[ip+1];
                 byte r2 = ram[ip+2];
@@ -194,7 +216,7 @@ public class VirtualMachine
                 return 255;
             }
 
-            case CMD.or:
+            case CMD.or_r:
             {
                 byte r1 = ram[ip+1];
                 byte r2 = ram[ip+2];
@@ -205,7 +227,7 @@ public class VirtualMachine
                 return 255;
             }
 
-            case CMD.xor:
+            case CMD.xor_r:
             {
                 byte r1 = ram[ip+1];
                 byte r2 = ram[ip+2];
@@ -216,7 +238,7 @@ public class VirtualMachine
                 return 255;
             }
 
-            case CMD.cmp:
+            case CMD.cmp_r:
             {
                 byte r1 = ram[ip+1];
                 byte r2 = ram[ip+2];
@@ -260,8 +282,28 @@ public class VirtualMachine
             case CMD.div_i:
             {
                 byte r1 = ram[ip+1];
-                // При делении на 0 процессор должен бы вызвать исключение, но пока так
+                // Exception if division by zero
                 rgs[r1] = rgs[r1] / BitConverter.ToInt32(ram, ip+2);
+                ip += 6;
+                SetZF(rgs[r1] == 0);
+                SetSF(((uint)rgs[r1] & 0x80000000) != 0);
+                return 255;
+            }
+
+            case CMD.shl_i:
+            {
+                byte r1 = ram[ip+1];
+                rgs[r1] = rgs[r1] << BitConverter.ToInt32(ram, ip+2);
+                ip += 6;
+                SetZF(rgs[r1] == 0);
+                SetSF(((uint)rgs[r1] & 0x80000000) != 0);
+                return 255;
+            }
+
+            case CMD.shr_i:
+            {
+                byte r1 = ram[ip+1];
+                rgs[r1] = rgs[r1] >> BitConverter.ToInt32(ram, ip+2);
                 ip += 6;
                 SetZF(rgs[r1] == 0);
                 SetSF(((uint)rgs[r1] & 0x80000000) != 0);
@@ -326,14 +368,14 @@ public class VirtualMachine
                 return 255;
             }
 
-            case CMD.jmp_rel:
+            case CMD.jmp_r:
             {
                 int rel = BitConverter.ToInt32(ram, ip+1);
                 ip += 5 + rel;
                 return 255;
             }
 
-            case CMD.jz_rel:
+            case CMD.jz_r:
             {
                 int rel = BitConverter.ToInt32(ram, ip+1);
                 if (IsZF())
@@ -343,7 +385,7 @@ public class VirtualMachine
                 return 255;
             }
 
-            case CMD.jnz_rel:
+            case CMD.jnz_r:
             {
                 int rel = BitConverter.ToInt32(ram, ip+1);
                 if (!IsZF())
@@ -353,14 +395,14 @@ public class VirtualMachine
                 return 255;
             }
 
-            case CMD.jmp_abs:
+            case CMD.jmp_a:
             {
                 byte r1 = ram[ip+1];
                 ip = rgs[r1];
                 return 255;
             }
 
-            case CMD.jz_abs:
+            case CMD.jz_a:
             {
                 byte r1 = ram[ip+1];
                 if (IsZF())
@@ -370,7 +412,7 @@ public class VirtualMachine
                 return 255;
             }
 
-            case CMD.jnz_abs:
+            case CMD.jnz_a:
             {
                 byte r1 = ram[ip+1];
                 if (!IsZF())

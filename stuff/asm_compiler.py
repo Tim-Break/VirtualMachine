@@ -10,25 +10,31 @@ cmds = {
     "mul_r" : 0x12,
     "div_r" : 0x13,
 
-    "and_r" : 0x14,
-    "or_r"  : 0x15,
-    "xor_r" : 0x16,
+    "shl_r" : 0x14,
+    "shr_r" : 0x15,
 
-    "cmp_r" : 0x17,
+    "and_r" : 0x16,
+    "or_r"  : 0x17,
+    "xor_r" : 0x18,
 
-    "add_i" : 0x18,
-    "sub_i" : 0x19,
-    "mul_i" : 0x1A,
-    "div_i" : 0x1B,
+    "cmp_r" : 0x19,
 
-    "and_i" : 0x1C,
-    "or_i"  : 0x1D,
-    "xor_i" : 0x1E,
+    "add_i" : 0x1A,
+    "sub_i" : 0x1B,
+    "mul_i" : 0x1C,
+    "div_i" : 0x1D,
 
-    "cmp_i" : 0x1F,
+    "shl_i" : 0x1E,
+    "shr_i" : 0x1F,
 
-    "push" : 0x20,
-    "pop" : 0x21,
+    "and_i" : 0x20,
+    "or_i"  : 0x21,
+    "xor_i" : 0x22,
+
+    "cmp_i" : 0x23,
+
+    "push" : 0x2D,
+    "pop" : 0x2E,
 
     "jmp_r" : 0x30,
     "jz_r" : 0x31,
@@ -166,7 +172,7 @@ def compile(text:str):
             cmd = parse_cmd(line)
             if cmd[0] == "": continue
             #print(cmd)
-            if cmd[0] in ("mov","add","sub","mul","div","and","or","xor","cmp"):
+            if cmd[0] in ("mov","add","sub","mul","div","shl","shr","and","or","xor","cmp"):
                 if cmd[1][1][0] == "reg":
                     out.extend([cmds[cmd[0]+"_r"], cmd[1][0][1], cmd[1][1][1]])
                 elif cmd[1][1][0] == "num":
