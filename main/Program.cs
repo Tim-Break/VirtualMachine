@@ -2,6 +2,8 @@
 It is just a launcher for my VM.
 */
 
+using System.Runtime.InteropServices;
+
 Console.WriteLine("Which test to run?");
 string num = Console.ReadLine();
 
@@ -16,3 +18,7 @@ string fullPath = Path.Combine(baseDir, "stuff\\test\\" + num + "\\iso", "disk.i
 disk.LoadFromFile(fullPath);
 
 VirtualMachine vm = new VirtualMachine(disk);
+
+// Debug
+Console.WriteLine(vm.rgs[7]);
+// Debug

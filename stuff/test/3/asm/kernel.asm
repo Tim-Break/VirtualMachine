@@ -1,7 +1,10 @@
 _start:
     mov r1, 4096
     mov r0, 0
+    in r6, 0xFC0    ; Start time
     call loop
+    in r7, 0xFC0    ; End time
+    sub r7, r6
     halt
 
 loop:

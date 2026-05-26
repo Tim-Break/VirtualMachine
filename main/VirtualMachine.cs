@@ -1,5 +1,7 @@
 public class VirtualMachine
 {
+    private DateTime date = new DateTime(2026, 1, 1, 0, 0, 0);
+
     private int ramsize;
     private byte[] ram;
 
@@ -32,6 +34,8 @@ public class VirtualMachine
         SetupDiskPorts(disk);
         portWriters[0x3F8] = (val) => Console.Write((char)(val & 0xFF));
 
+        portReaders[0xFC0] = () => (uint)GetTime();     // Time port
+
         BootFromDisk();
     }
 
@@ -62,6 +66,12 @@ public class VirtualMachine
                 }
             }
         };
+    }
+
+
+    private long GetTime()
+    {
+        return (long)(date - DateTime.UtcNow).TotalMilliseconds;
     }
     
 
