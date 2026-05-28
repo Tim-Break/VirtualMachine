@@ -25,8 +25,11 @@ def prep_test():
     halt"""
     import os
     nms = os.listdir("stuff/test/")
-    nms.sort()
-    test_num = int(nms[-1]) + 1
+    if len(nms) > 0:
+        nms.sort()
+        test_num = int(nms[-1]) + 1
+    else:
+        test_num = 0
 
     # Create test dir
     os.mkdir(f"stuff/test/{test_num}")
@@ -45,12 +48,12 @@ def prep_test():
     os.mkdir(f"stuff/test/{test_num}/bin")
 
     # Create iso dir
-    os.mkdir(f"stuff/test/{test_num}/iso")
+    os.mkdir(f"stuff/test/{test_num}/img")
 
 
 def build_test(test_num):
     from asm_compiler import build_file
-    from disk_iso_creator import create_disk_iso
+    from stuff.disk_img_creator import create_disk_img
 
     # Build bootloader.asm
     build_file(f"stuff/test/{test_num}/asm/bootloader.asm",
@@ -60,10 +63,10 @@ def build_test(test_num):
     build_file(f"stuff/test/{test_num}/asm/kernel.asm",
                f"stuff/test/{test_num}/bin/kernel.bin")
 
-    # Creating disk.iso
-    create_disk_iso(f"stuff/test/{test_num}/bin/bootloader.bin",
+    # Creating disk.img
+    create_disk_img(f"stuff/test/{test_num}/bin/bootloader.bin",
                     f"stuff/test/{test_num}/bin/kernel.bin",
-                    f"stuff/test/{test_num}/iso/disk.iso")
+                    f"stuff/test/{test_num}/img/disk.img")
 
 
 if __name__ == "__main__":

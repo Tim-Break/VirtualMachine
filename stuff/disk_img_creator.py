@@ -2,7 +2,7 @@ SECTOR_CNT = 64 * 1024 * 1024 // 512
 SECTOR_SIZE = 512
 KERNEL_SECTOR_CNT = 5
 
-def create_disk_iso(bootloader_path,kernel_path,output_path):
+def create_disk_img(bootloader_path,kernel_path,output_path):
     with open(output_path, "wb") as disk:
         data = bytearray(SECTOR_CNT * SECTOR_SIZE)
         bootloader = bytearray()
@@ -26,4 +26,4 @@ if __name__ == "__main__":
     bootloader_path = input("Compiled bootloader path: ")
     kernel_path = input("Compiled kernel path: ")
     output_path = input("ISO File path: ")
-    create_disk_iso(bootloader_path,kernel_path,output_path)
+    create_disk_img(bootloader_path,kernel_path,output_path)
