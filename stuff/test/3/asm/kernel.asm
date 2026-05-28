@@ -1,5 +1,6 @@
 _start:
     mov r0, 131072
+    mul r0, 1
     in r6, 0xFC0    ; Start time
     call loop
     in r7, 0xFC0    ; End time

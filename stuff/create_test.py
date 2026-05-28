@@ -53,7 +53,7 @@ def prep_test():
 
 def build_test(test_num):
     from asm_compiler import build_file
-    from stuff.disk_img_creator import create_disk_img
+    from disk_img_creator import create_disk_img
 
     # Build bootloader.asm
     build_file(f"stuff/test/{test_num}/asm/bootloader.asm",

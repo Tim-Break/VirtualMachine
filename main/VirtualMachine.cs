@@ -1,6 +1,6 @@
 public class VirtualMachine
 {
-    private DateTime date = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+    private DateTime date = new DateTime(2026, 5, 28, 0, 0, 0, DateTimeKind.Utc);
 
     private int ramsize;
     private byte[] ram;
@@ -71,6 +71,7 @@ public class VirtualMachine
 
     private int GetTime()
     {
+        Console.WriteLine((DateTime.UtcNow - date).TotalMilliseconds);
         return (int)(DateTime.UtcNow - date).TotalMilliseconds;
     }
     
