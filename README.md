@@ -2,7 +2,7 @@
 An attempt to create a virtual machine for a computer network simulation game.
 
 ## How to **Run VM**
-You can use `Program.cs` script from `main\`.
+You can use `Program.cs` script from `main\`.In this case, the program will ask for the test number to be run, which is the same number that needs to be entered when building the test.
 
 ## How to **Create `disk.iso`**
 You can create a file `disk.iso` using the `disk_iso_creator.py` script from `stuff/`.
