@@ -7,5 +7,9 @@ You can use `Program.cs` script from `main\`.
 ## How to **Create `disk.iso`**
 You can create a file `disk.iso` using the `disk_iso_creator.py` script from `stuff/`.
 
+If you already have a test, you can build it immediately by running the `create_test.py` script from `stuff/`. After running the script, enter `b` and then the number of your test (the name of the folder containing the test, for exmple for test `tests/1/` you need to enter `1`). This will compile the `kernel.asm` and `bootloader.asm` scripts and create the `disk.img` file.
+
 ## How to **Compile assembly files**
 You can compile any of your assembly files (`.asm`) using the `asm_compiler.py` script from `stuff/`. When you run the program, it will ask you for the path to your `.asm` file and the name of the compiled file (it is recommended to use the `.bin` extension). Any execution error is most likely caused by an incorrect assembly code (but this is not guaranteed `:)`).
+
+You also can create test using `create_test.py` from `stuff/`. To do this, run this script and enter `p`. This will automatically create a new test in the `tests` folder, and `asm`, `bin` and `iso` folders will be created inside the folder with the test name (its number). The asm folder will contain a primitive bootloader and a stub kernel. When building the test, these files will be automatically compiled and written to the disk image.
