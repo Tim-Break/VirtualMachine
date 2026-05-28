@@ -1,6 +1,6 @@
 public class VirtualMachine
 {
-    private DateTime date = new DateTime(2026, 1, 1, 0, 0, 0);
+    private DateTime date = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
     private int ramsize;
     private byte[] ram;
@@ -14,13 +14,13 @@ public class VirtualMachine
 
     private Disk disk;
 
-    private uint diskLBA;
-    private uint diskMemAddr;
-    private uint diskSectorCount;
+    private int diskLBA;
+    private int diskMemAddr;
+    private int diskSectorCount;
 
 
-    private Dictionary<ushort, Action<uint>> portWriters = new();
-    private Dictionary<ushort, Func<uint>> portReaders = new();
+    private Dictionary<ushort, Action<int>> portWriters = new();
+    private Dictionary<ushort, Func<int>> portReaders = new();
 
 
     public VirtualMachine(Disk disk, int ramsize = 16_777_216)
@@ -34,7 +34,7 @@ public class VirtualMachine
         SetupDiskPorts(disk);
         portWriters[0x3F8] = (val) => Console.Write((char)(val & 0xFF));
 
-        portReaders[0xFC0] = () => (uint)GetTime();     // Time port
+        portReaders[0xFC0] = () => GetTime();     // Time port
 
         BootFromDisk();
     }
@@ -52,8 +52,8 @@ public class VirtualMachine
                 byte[] sectorBuf = new byte[Disk.SectorSize];
                 for (int i = 0; i < diskSectorCount; i++)
                 {
-                    disk.ReadSector((int)(diskLBA + i), sectorBuf, 0);
-                    Array.Copy(sectorBuf, 0, ram, (int)(diskMemAddr + i * Disk.SectorSize), Disk.SectorSize);
+                    disk.ReadSector(diskLBA + i, sectorBuf, 0);
+                    Array.Copy(sectorBuf, 0, ram, diskMemAddr + i * Disk.SectorSize, Disk.SectorSize);
                 }
             }
             else if (cmd == 0x30) // WRITE SECTORS
@@ -61,17 +61,17 @@ public class VirtualMachine
                 byte[] sectorBuf = new byte[Disk.SectorSize];
                 for (int i = 0; i < diskSectorCount; i++)
                 {
-                    Array.Copy(ram, (int)(diskMemAddr + i * Disk.SectorSize), sectorBuf, 0, Disk.SectorSize);
-                    disk.WriteSector((int)(diskLBA + i), sectorBuf, 0);
+                    Array.Copy(ram, diskMemAddr + i * Disk.SectorSize, sectorBuf, 0, Disk.SectorSize);
+                    disk.WriteSector(diskLBA + i, sectorBuf, 0);
                 }
             }
         };
     }
 
 
-    private long GetTime()
+    private int GetTime()
     {
-        return (long)(date - DateTime.UtcNow).TotalMilliseconds;
+        return (int)(DateTime.UtcNow - date).TotalMilliseconds;
     }
     
 
@@ -485,7 +485,7 @@ public class VirtualMachine
                 ushort port = BitConverter.ToUInt16(ram, ip+1);
                 byte r1 = ram[ip+3];
                 if (portWriters.TryGetValue(port, out var writer))
-                    writer((uint)rgs[r1]);
+                    writer(rgs[r1]);
                 ip+=4;
                 return 255;
             }
