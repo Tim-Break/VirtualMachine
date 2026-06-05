@@ -179,36 +179,54 @@ def find_entry_in_dir(ba: bytearray, fs: FS, inode: int, entry: bytearray):
                     break
             else:
                 return bytes2int32(val[j+k+28:j+k+32])
-    return -1
+    raise Exception("Directory does not exist!")
 
 
 def add_object_to_dir(ba: bytearray, fs: FS, path: str, tinode: int):
     path_splitted = path.split("/")
     if len(path_splitted) < 2: return
-    path_bytes = [bytearray(i.encode("ascii")) for i in path_splitted]
+    path_bytes = [bytearray(i.encode("ascii"))[:28] for i in path_splitted]
 
     inode = 0
     for i in range(len(path_bytes)-1):
-        if len(path_bytes) > 28:
-            path_bytes[i] = path_bytes[:28]
-        else:
-            path_bytes[i].extend([0]*28-len(path_bytes))
+        path_bytes[i].extend([0]*(28-len(path_bytes)))
         if inode == -1: raise Exception("Directory is not exists!")
         inode = find_entry_in_dir(ba, fs, inode, path_bytes[i])
     
     data = path_bytes[-1]
     data.extend(int2bytes32(tinode))
     fs.inodes[inode].size += 32
-    # TODO: writedirectory expander
-
     
+    for i, dr in enumerate(fs.inodes[inode].direct):
+        if dr == 0:
+            if i == 0:
+                sec = 546 + fs.find_sector()
+                if sec == -1: raise Exception("Not enough sectors")
+                fs.inodes[inode].direct[i] = sec
+                ba[sec*512:sec*512+32] = data
+                break
+            else:
+                sec = fs.inodes[inode].direct[i-1]
+                for j in range(16):
+                    if ba[sec*512+j*32] == 0:
+                        ba[sec*512+j*32:sec*512+j*32+32] = data
+                        break
+                else:
+                    sec = 546 + fs.find_sector()
+                    if sec == -1: raise Exception("Not enough sectors")
+                    fs.inodes[inode].direct[i] = sec
+                    ba[sec*512:sec*512+32] = data
+                    break
+    else:
+        # TODO: code expsnding to indirect nodes
+        pass
 
 
 print("start 1")
-create_file(data, fs, "IMG_20260519_213833.webp")
+create_dir(data, fs, "usr")
 
 print("start 2")
-create_dir(data, fs, "usr")
+create_file(data, fs, "usr/IMG_20260519_213833.webp")
 
 print(fs.inodes[0])
 print(fs.inodes[1])
