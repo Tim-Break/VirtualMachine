@@ -34,8 +34,8 @@ class Inode:
         out = bytearray()
         out.append(self.type & 0xFF)
         out.extend(int2bytes32(self.size))
-        for i in range(10):
-            out.extend(int2bytes32(self.direct[i]))
+        for i in self.direct:
+            out.extend(int2bytes32(i))
         out.extend(int2bytes32(self.indirect1))
         out.extend(int2bytes32(self.indirect2))
         out.extend([0]*3)
@@ -48,7 +48,7 @@ class Inode:
 class FS:
     def __init__(self, inode_cnt):
         self.inodes = [Inode() for _ in range(inode_cnt)]
-        self.sectors_bitmap = bytearray(32)
+        self.sectors_bitmap = bytearray(32*512)
 
     def find_sector(self):
         num = -1
@@ -144,12 +144,14 @@ def create_file(ba: bytearray, fs: FS, fp: str):
             print("Read start")
             data = bytearray(f.read(512))
             print("Read end")
+    add_object_to_dir(ba, fs, fp, inode)
 
 
 def create_dir(ba: bytearray, fs: FS, dp: str):
     inode = fs.find_inode()
     if inode == -1: raise Exception("Not enough inodes")
     fs.inodes[inode].type = 2
+    add_object_to_dir(ba, fs, dp, inode)
 
 
 def find_entry_in_dir(ba: bytearray, fs: FS, inode: int, entry: bytearray):
@@ -157,44 +159,48 @@ def find_entry_in_dir(ba: bytearray, fs: FS, inode: int, entry: bytearray):
         val = ba[512*i:512*i+512]
         for j in range(0,512,32):
             for k in range(28):
-                if val[j+k] != entry[j]:
+                if val[j+k] != entry[k]:
                     break
             else:
-                return bytes2int32(val[j+k+28:j+k+32])
+                return bytes2int32(val[j+28:j+32])
     for n in range(0,128,4):
         i = bytes2int32(ba[fs.inodes[inode].indirect1+n:fs.inodes[inode].indirect1+n+4])
         val = ba[512*i:512*i+512]
         for j in range(0,512,32):
             for k in range(28):
-                if val[j+k] != entry[j]:
+                if val[j+k] != entry[k]:
                     break
             else:
-                return bytes2int32(val[j+k+28:j+k+32])
+                return bytes2int32(val[j+28:j+32])
     for n in range(0,128,4):
         i = bytes2int32(ba[fs.inodes[inode].indirect2+n:fs.inodes[inode].indirect2+n+4])
         val = ba[512*i:512*i+512]
         for j in range(0,512,32):
             for k in range(28):
-                if val[j+k] != entry[j]:
+                if val[j+k] != entry[k]:
                     break
             else:
-                return bytes2int32(val[j+k+28:j+k+32])
+                return bytes2int32(val[j+28:j+32])
     raise Exception("Directory does not exist!")
 
 
 def add_object_to_dir(ba: bytearray, fs: FS, path: str, tinode: int):
     path_splitted = path.split("/")
-    if len(path_splitted) < 2: return
     path_bytes = [bytearray(i.encode("ascii"))[:28] for i in path_splitted]
+
+    for i in path_bytes:
+        i.extend([0]*(28-len(i)))
 
     inode = 0
     for i in range(len(path_bytes)-1):
-        path_bytes[i].extend([0]*(28-len(path_bytes)))
         if inode == -1: raise Exception("Directory is not exists!")
+        print(path_splitted, path_splitted[i], len(path_bytes[i]))
         inode = find_entry_in_dir(ba, fs, inode, path_bytes[i])
+        print(inode)
     
     data = path_bytes[-1]
     data.extend(int2bytes32(tinode))
+    print(len(data))
     fs.inodes[inode].size += 32
     
     for i, dr in enumerate(fs.inodes[inode].direct):
@@ -203,22 +209,26 @@ def add_object_to_dir(ba: bytearray, fs: FS, path: str, tinode: int):
                 sec = 546 + fs.find_sector()
                 if sec == -1: raise Exception("Not enough sectors")
                 fs.inodes[inode].direct[i] = sec
+                print("WRITE")
                 ba[sec*512:sec*512+32] = data
                 break
             else:
                 sec = fs.inodes[inode].direct[i-1]
                 for j in range(16):
                     if ba[sec*512+j*32] == 0:
+                        print("WRITE")
                         ba[sec*512+j*32:sec*512+j*32+32] = data
                         break
                 else:
                     sec = 546 + fs.find_sector()
                     if sec == -1: raise Exception("Not enough sectors")
                     fs.inodes[inode].direct[i] = sec
+                    print("WRITE")
                     ba[sec*512:sec*512+32] = data
                     break
+                break
     else:
-        # TODO: code expsnding to indirect nodes
+        # TODO: write expanding to indirect nodes
         pass
 
 
@@ -226,7 +236,15 @@ print("start 1")
 create_dir(data, fs, "usr")
 
 print("start 2")
-create_file(data, fs, "usr/IMG_20260519_213833.webp")
+create_file(data, fs, "usr/test1.txt")
 
-print(fs.inodes[0])
-print(fs.inodes[1])
+for i, inode in enumerate(fs.inodes):
+    sind = inode.serialize()
+    data[512+i*64:512+i*64+64] = sind
+
+data[514*512:546*512] = fs.sectors_bitmap
+
+print(sum(data))
+
+with open("usr/disk.img", "wb") as disk:
+    disk.write(data)
