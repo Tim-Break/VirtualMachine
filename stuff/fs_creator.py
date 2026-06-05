@@ -70,21 +70,12 @@ class FS:
         return -1
 
 
-data = bytearray(64*1024*1024)
-fs = FS(4096)
-
-
-# root directory
-fs.inodes[0].type = 2
-# ==============
-
-
-def create_file(ba: bytearray, fs: FS, fp: str):
+def create_file(ba: bytearray, fs: FS, fp: str, rfp: str):
     inode = fs.find_inode()
     print("Inode",inode)
     if inode == -1: raise Exception("Not enough inodes")
     fs.inodes[inode].type = 1
-    with open(fp, "rb") as f:
+    with open(rfp, "rb") as f:
         data = bytearray(f.read(512))
         while len(data) > 0:
             print("Data length",len(data))
@@ -232,19 +223,47 @@ def add_object_to_dir(ba: bytearray, fs: FS, path: str, tinode: int):
         pass
 
 
-print("start 1")
-create_dir(data, fs, "usr")
+if __name__ == "__main__":
+    import os
+    n = "stuff/fsTest/"+input("fsTest name: ")+"/"
 
-print("start 2")
-create_file(data, fs, "usr/test1.txt")
+    data = bytearray(64*1024*1024)
+    fs = FS(4096)
+ 
 
-for i, inode in enumerate(fs.inodes):
-    sind = inode.serialize()
-    data[512+i*64:512+i*64+64] = sind
+    # root directory
+    fs.inodes[0].type = 2
+    # ==============
 
-data[514*512:546*512] = fs.sectors_bitmap
+    def dir_process(dir):
+        print("New directory:", dir)
+        create_dir(data, fs, dir)
 
-print(sum(data))
+        files = os.listdir(n+dir)
+        dir += "/"
+        for i in files:
+            if os.path.isfile(n+dir+i):
+                print("New file:", dir+i)
+                create_file(data, fs, dir+i, n+dir+i)
+            else:
+                dir_process(dir+i)
 
-with open("usr/disk.img", "wb") as disk:
-    disk.write(data)
+
+    files = os.listdir(n)
+    for i in files:
+        if os.path.isfile(n+i):
+            create_file(data, fs, i, n+i)
+        else:
+            dir_process(i)
+    
+
+    for i, inode in enumerate(fs.inodes):
+        sind = inode.serialize()
+        data[512+i*64:512+i*64+64] = sind
+
+    data[514*512:546*512] = fs.sectors_bitmap
+
+    print(sum(data))
+
+    with open("usr/disk.img", "wb") as disk:
+        disk.write(data)

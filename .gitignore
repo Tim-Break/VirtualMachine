@@ -1,4 +1,4 @@
-main/obj/
-main/bin/
-stuff/__pycache__/
-usr/
+/main/obj/
+/main/bin/
+/stuff/__pycache__/
+/usr/
