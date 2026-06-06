@@ -140,6 +140,7 @@ def create_file(ba: bytearray, fs: FS, fp: str, rfp: str):
 
 def create_dir(ba: bytearray, fs: FS, dp: str):
     inode = fs.find_inode()
+    print("Inode", inode)
     if inode == -1: raise Exception("Not enough inodes")
     fs.inodes[inode].type = 2
     add_object_to_dir(ba, fs, dp, inode)
@@ -191,27 +192,27 @@ def add_object_to_dir(ba: bytearray, fs: FS, path: str, tinode: int):
     
     data = path_bytes[-1]
     data.extend(int2bytes32(tinode))
-    print(len(data))
     fs.inodes[inode].size += 32
     
     for i, dr in enumerate(fs.inodes[inode].direct):
         if dr == 0:
             if i == 0:
                 sec = 546 + fs.find_sector()
+                print("COND 1", sec)
                 if sec == -1: raise Exception("Not enough sectors")
                 fs.inodes[inode].direct[i] = sec
-                print("WRITE")
                 ba[sec*512:sec*512+32] = data
                 break
             else:
                 sec = fs.inodes[inode].direct[i-1]
                 for j in range(16):
                     if ba[sec*512+j*32] == 0:
-                        print("WRITE")
+                        print("COND 2", sec)
                         ba[sec*512+j*32:sec*512+j*32+32] = data
                         break
                 else:
                     sec = 546 + fs.find_sector()
+                    print("COND 3", sec)
                     if sec == -1: raise Exception("Not enough sectors")
                     fs.inodes[inode].direct[i] = sec
                     print("WRITE")
@@ -226,11 +227,17 @@ def add_object_to_dir(ba: bytearray, fs: FS, path: str, tinode: int):
 if __name__ == "__main__":
     import os
     n = "stuff/fsTest/"+input("fsTest name: ")+"/"
+    btp = input("Bootloader: ")
 
-    data = bytearray(64*1024*1024)
+    data = bytearray(16*1024*1024)
     fs = FS(4096)
- 
 
+    if btp != "":
+        with open(btp, "rb") as bl:
+            bootloader = bytearray(bl.read())
+            bootloader.extend([0] * (512 - len(bootloader)))
+            data[:512] = bootloader
+    
     # root directory
     fs.inodes[0].type = 2
     # ==============
