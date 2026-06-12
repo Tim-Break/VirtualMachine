@@ -25,6 +25,9 @@ You can create a file `disk.img` using the `disk_img_creator.py` script from `st
 ## How to **Manually compile assembly files**
 You can compile any of your assembly files (`.asm`) using the `asm_compiler.py` script from `stuff/`. When you run the program, it will ask you for the path to your `.asm` file and the name of the compiled file (it is recommended to use the `.bin` extension). Any execution error is most likely caused by an incorrect assembly code (but this is not guaranteed `:)`).
 
+## COMPILER
+[Compiler repository(Compiler-For-VM)](https://github.com/Tim-Break/Compiler-For-VM)
+
 
 
 
