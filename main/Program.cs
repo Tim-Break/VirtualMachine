@@ -3,7 +3,7 @@ It is just a launcher for my VM.
 */
 
 Console.WriteLine("Which test to run?");
-string num = Console.ReadLine();
+string? num = Console.ReadLine();
 
 Disk disk = new Disk(64 * 1024 * 1024 / 512);
 

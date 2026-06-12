@@ -59,12 +59,20 @@ cmds = {
 }
 
 
-def get_imm32(num: int):
+def int2bytes32(num: int):
     out = []
     out.append(num & 0xFF)
     out.append((num >> 8) & 0xFF)
     out.append((num >> 16) & 0xFF)
     out.append((num >> 24) & 0xFF)
+    return out
+
+
+def bytes2int32(arr: bytearray):
+    out = arr[0]
+    out += arr[1] << 8
+    out += arr[1] << 16
+    out += arr[1] << 27
     return out
 
 
@@ -128,11 +136,10 @@ def parse_cmd(line:str):
                 num += line[0]
                 line = line[1:]
             args.append(("num", int(num)))
-        elif line[0] in ('"',"'"):
+        elif line[0] == '"':
             value = ""
-            kwoke = line[0]
             line = line[1:]
-            while len(line) >= 1 and line[0] != kwoke:
+            while len(line) >= 1 and line[0] != '"':
                 if line[0] == "\\":
                     line = line[1:]
                     if line[0] in ("'",'"'):
@@ -151,6 +158,28 @@ def parse_cmd(line:str):
                     value += line[0]
                     line = line[1:]
             args.append(("byt", list(value.encode("ascii"))))
+        elif line[0] == "'":
+            value = ""
+            line = line[1:]
+            while len(line) >= 1 and line[0] != '"':
+                if line[0] == "\\":
+                    line = line[1:]
+                    if line[0] in ("'",'"'):
+                        value += line[0]
+                        line = line[1:]
+                    elif line[0] == "n":
+                        value += "\n"
+                        line = line[1:]
+                    elif line[0] == "t":
+                        value += "\t"
+                        line = line[1:]
+                    elif line[0] == "\\":
+                        value += "\\"
+                        line = line[1:]
+                else:
+                    value += line[0]
+                    line = line[1:]
+            args.append(("num", bytes2int32(bytearray(value.encode("ascii")))))
         line = line[1:]
     
     return cmd, args
@@ -176,7 +205,7 @@ def compile(text:str):
                 if cmd[1][1][0] == "reg":
                     out.extend([cmds[cmd[0]+"_r"], cmd[1][0][1], cmd[1][1][1]])
                 elif cmd[1][1][0] == "num":
-                    out.extend([cmds[cmd[0]+"_i"], cmd[1][0][1]] + get_imm32(cmd[1][1][1]))
+                    out.extend([cmds[cmd[0]+"_i"], cmd[1][0][1]] + int2bytes32(cmd[1][1][1]))
             elif cmd[0] in ("load","store"):
                 out.extend([cmds[cmd[0]], cmd[1][0][1], cmd[1][1][1]])
             elif cmd[0] in ("jmp","jz","jnz"):
@@ -197,11 +226,11 @@ def compile(text:str):
                 write_markers.append((len(out),len(out)+4,cmd[1][0][1]))
                 out.extend([0,0,0,0])
             elif cmd[0] == "int":
-                out.extend([cmds["int"]] + get_imm32(cmd[1][0][1])[:2])
+                out.extend([cmds["int"]] + int2bytes32(cmd[1][0][1])[:2])
             elif cmd[0] == "in":
-                out.extend([cmds["in"], cmd[1][0][1]] + get_imm32(cmd[1][1][1])[:2])
+                out.extend([cmds["in"], cmd[1][0][1]] + int2bytes32(cmd[1][1][1])[:2])
             elif cmd[0] == "out":
-                out.extend([cmds["out"]] + get_imm32(cmd[1][0][1])[:2] + [cmd[1][1][1]])
+                out.extend([cmds["out"]] + int2bytes32(cmd[1][0][1])[:2] + [cmd[1][1][1]])
             elif cmd[0] in ("ret","iret","halt"):
                 out.append(cmds[cmd[0]])
             elif cmd[0] == "db":
@@ -209,13 +238,13 @@ def compile(text:str):
                     if arg[0] == "byt":
                         out.extend(arg[1])
                     elif arg[0] == "num":
-                        out.extend(get_imm32(arg[1]))
+                        out.extend(int2bytes32(arg[1]))
         else:
             mrk = parse_marker(line)
             markers[mrk] = len(out)
     
     for wmrk in write_markers:
-        out[wmrk[0]:wmrk[0]+4] = bytearray(get_imm32(markers[wmrk[2]] - wmrk[1]))
+        out[wmrk[0]:wmrk[0]+4] = bytearray(int2bytes32(markers[wmrk[2]] - wmrk[1]))
     
     return out
 
