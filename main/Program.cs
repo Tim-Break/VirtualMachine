@@ -18,6 +18,5 @@ disk.LoadFromFile(fullPath);
 VirtualMachine vm = new VirtualMachine(disk);
 
 // Debug
-Console.WriteLine(vm.rgs[0]);
-Console.WriteLine(vm.rgs[7]);
+Console.WriteLine(vm.rgs[1]);
 // Debug
