@@ -350,6 +350,16 @@ public class VirtualMachine
                 SetSF(((uint)res & 0x80000000) != 0);
                 return 255;
             }
+
+            case CMD.not:
+            {
+                byte r1 = ram[ip+1];
+                rgs[r1] = ~rgs[r1];
+                ip += 2;
+                SetZF(rgs[r1] == 0);
+                SetSF(((uint)rgs[r1] & 0x80000000) != 0);
+                return 255;
+            }
             
             case CMD.push:
             {

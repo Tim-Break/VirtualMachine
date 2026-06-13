@@ -34,6 +34,8 @@ public enum CMD : byte
 
     cmp_i = 0x23,
 
+    not = 0x24,
+
     push = 0x2D,
     pop = 0x2E,
 

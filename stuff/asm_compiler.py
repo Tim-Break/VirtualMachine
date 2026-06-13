@@ -33,6 +33,8 @@ cmds = {
 
     "cmp_i" : 0x23,
 
+    "not" : 0x24,
+
     "push" : 0x2D,
     "pop" : 0x2E,
 
@@ -215,7 +217,7 @@ def compile(text:str):
                     out.append(cmds[cmd[0]+"_r"])
                     write_markers.append((len(out),len(out)+4,cmd[1][0][1]))
                     out.extend([0,0,0,0])
-            elif cmd[0] in ("push","pop"):
+            elif cmd[0] in ("push","pop","not"):
                 out.extend([cmds[cmd[0]], cmd[1][0][1]])
             elif cmd[0] == "lea":
                 out.extend([cmds["lea"], cmd[1][0][1]])
