@@ -1,3 +1,4 @@
+; Source code is just "100*(10+1)".
 mov r1, 1
 mov r2, r1
 mov r1, 10
