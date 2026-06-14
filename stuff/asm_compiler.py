@@ -118,7 +118,7 @@ def parse_cmd(line:str):
                 num += line[0]
                 line = line[1:]
             args.append(("byt", [int(num)]))
-        elif line[0].isalpha() or line[0] in ("_", ".", "-"):
+        elif line[0].isalpha() or line[0] in ("_"):
             mrk = ""
             while len(line) >= 1 and (line[0].isalnum() or line[0] in ("_", ".", "-")):
                 mrk += line[0]
@@ -132,8 +132,9 @@ def parse_cmd(line:str):
                 num += line[0]
                 line = line[1:]
             args.append(("num", int(num, sys)))
-        elif line[0].isdigit():
-            num = ""
+        elif line[0].isdigit() or line[0] == "-":
+            num = line[0]
+            line = line[1:]
             while len(line) >= 1 and line[0].isdigit():
                 num += line[0]
                 line = line[1:]
